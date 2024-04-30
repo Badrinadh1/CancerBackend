@@ -2,7 +2,7 @@ import json
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
-import random
+import requests
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 app = FastAPI()
@@ -15,10 +15,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Number of candidates
+# Getting File from blob storage
 @app.on_event("startup")
 async def Startup():
-    pass
+    blob_url = "https://cancerdataset.blob.core.windows.net/dataset/cancer_patient_details.csv"
+    save_path = "assets/cancer_patient_details.csv"
+    response = requests.get(blob_url)
+    if response.status_code == 200:
+        with open(save_path, 'wb') as file:
+            file.write(response.content)
+        print("File downloaded successfully!")
+    else:
+        print("Failed to download the file:", response.status_code)
 
 
 @app.get("/showdataset")
